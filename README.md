@@ -5,7 +5,7 @@ Usar o Databricks Community para realizar a tarefa. Caso não tenha cadastro faz
 
 Ao fazer Login crie um cluster no menu "Compute"
 
-Para carregar os arquivos e poder gerar as tabelas a partir deles use o meno "Catalog"->Create Table->Drop Files To Upload, or click to browse. Depois do upload ele mostra o path do arquivo
+Para carregar os arquivos e poder gerar as tabelas a partir deles use o menu "Catalog"->Create Table->Drop Files To Upload, or click to browse. Depois do upload ele mostra o path do arquivo
 
 Temos 2 arquivos para serem carregados:
 
