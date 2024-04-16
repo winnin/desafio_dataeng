@@ -29,9 +29,9 @@ Temos 2 arquivos para serem carregados:
         - Mostrar o top 3 posts ordenado por likes de cada creator nos últimos 6 meses (user_id, title, likes, rank)
         - Mostrar o top 3 posts ordenado por views de cada creator nos últimos 6 meses (user_id, title, views, rank)
         - Mostrar os yt_user que estão na tabela default.post_creator mas não estão na tabela default.users_yt
-        - Mostrar a quantidade de publicacoes por mês de cada creator.
+        - Mostrar a quantidade de publicações por mês de cada creator.
             - Exercício Extra 1: mostrar 0 nos meses que não tem video
-            - Exercício Extra 2: transformar a tabela no formato que a primeira coluna é o user_id temos uma coluna para cada mes. 
+            - Exercício Extra 2: transformar a tabela no formato que a primeira coluna é o user_id e temos uma coluna para cada mês. 
                 - ex: 
                     - user_id, 2024/01, 2024/02, 2024/03
                     - felipeneto, 10, 20, 30
