@@ -21,6 +21,9 @@ Temos 2 arquivos para serem carregados:
 
 3. Criar o notebook "3 - create_table_user_yt_from_wikipedia_api" para gerar a tabela delta default.users_yt
     * Usar a tabela default.creators_scrape_wiki para buscar na api da wikipedia o user_id do youtube de cada wiki_name
+        - dica 1: utilizar o endpoint https://en.wikipedia.org/w/api.php
+        - dica 2: utilizar parametros params = {"action": "parse","page": f"{page_name}","format": "json"}
+    
     * Campos da tabela default.users_yt:  user_id(extraido da wikipedia) e o wiki_page(da tabela default.creators_scrape_wiki)
     * Exemplo de 1 registro da tabela {'user_id': 'felipeneto', 'wiki_page': 'Felipe_Neto'}    
 
