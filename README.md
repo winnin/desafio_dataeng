@@ -35,6 +35,7 @@ Temos 2 arquivos para serem carregados:
                     - lucasneto, 5, 10, 15
             - Exercício Extra 3: Mostrar as 3 tags mais utilizadas por criador de conteúdo
 
+## Envio
 Exportar todo seu workspace e nos enviar como um projeto github.
  
 Para exportar va no menu workspace->users->seu usuário->clicar na setinha pra baixo->export->source file
