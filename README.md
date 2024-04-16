@@ -9,6 +9,9 @@ Temos 2 arquivos para serem carregados:
 - 1-wiki_pages.json.gz com nomes de criadores de conteúdo(wiki_page) para buscar na API da wikipedia o user_id do respectivo criador no youtube.
 - 2-posts_creator_json.json.gz com dados de posts de criadores de conteúdo (creator_id,views,likes,title,published_at,tags,yt_user)
 
+
+## Exercícios
+
 1. Criar o notebook "1 - create_table_creators_scrape_wiki" que le o arquivo 1-wiki_pages.json.gz e cria a tabela delta default.creators_scrape_wiki
 
 2. Criar o notebook "2 - create_table_posts_creator" que le o arquivo 2-posts_creator_json.json.gz e cria a tabela delta default.posts_creator
