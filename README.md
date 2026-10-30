@@ -1,47 +1,131 @@
-# Desafio Data Engineer Winnin
+# Desafio técnico: Engenharia de Dados
 
-## Instruções
-Usar o Databricks Community para realizar a tarefa. Caso não tenha cadastro fazer o  cadastro em https://www.databricks.com/try-databricks#account e na tela de escolher o plano escolha "Get started with Community Edition"
+Obrigado por participar do processo. Este desafio se parece com o trabalho do dia a dia. Os dados chegam de mais de uma fonte, do jeito que chegam, e precisam virar tabelas confiáveis para outros times usarem.
 
-Ao fazer Login crie um cluster no menu "Compute"
+**Tempo esperado: de 4 a 6 horas.** Você tem 7 dias corridos para entregar. Não esperamos perfeição. Preferimos menos coisa, bem feita e bem explicada, a tudo pela metade.
 
-Para carregar os arquivos e poder gerar as tabelas a partir deles use o menu "Catalog"->Create Table->Drop Files To Upload, or click to browse. Depois do upload ele mostra o path do arquivo
+## Contexto
 
-Temos 2 arquivos para serem carregados:
+Acompanhamos o desempenho de posts públicos de criadores de conteúdo no YouTube, no Instagram e no TikTok. Dois coletores observam cada post várias vezes por dia e entregam o que viram em arquivos:
 
-- 1-wiki_pages.json.gz com nomes de criadores de conteúdo(wiki_page) para buscar na API da wikipedia o user_id do respectivo criador no youtube.
-- 2-posts_creator_json.json.gz com dados de posts de criadores de conteúdo (creator_id,views,likes,title,published_at,tags,yt_user)
+- **api**: lê a API oficial das plataformas;
+- **pagina**: lê a página pública do post.
 
+Cada observação é uma foto das métricas de um post naquele momento. Ao longo dos dias, o mesmo post aparece dezenas de vezes.
 
-## Exercícios
+Dois times usam esses dados:
 
-1. Criar o notebook "1 - create_table_creators_scrape_wiki" que le o arquivo 1-wiki_pages.json.gz e cria a tabela delta default.creators_scrape_wiki
+- o **produto** mostra aos clientes o estado atual de cada post;
+- a **ciência de dados** estuda como os posts crescem nos primeiros 30 dias depois de publicados.
 
-2. Criar o notebook "2 - create_table_posts_creator" que le o arquivo 2-posts_creator_json.json.gz e cria a tabela delta default.posts_creator
+## Os dados
 
-3. Criar o notebook "3 - create_table_user_yt_from_wikipedia_api" para gerar a tabela delta default.users_yt
-    * Usar a tabela default.creators_scrape_wiki para buscar na api da wikipedia o user_id do youtube de cada wiki_name
-        - dica 1: utilizar o endpoint https://en.wikipedia.org/w/api.php
-        - dica 2: utilizar parametros params = {"action": "parse","page": f"{page_name}","format": "json"}
-    
-    * Campos da tabela default.users_yt:  user_id(extraido da wikipedia) e o wiki_page(da tabela default.creators_scrape_wiki)
-    * Exemplo de 1 registro da tabela {'user_id': 'felipeneto', 'wiki_page': 'Felipe_Neto'}    
+A pasta `dados/` tem 10 dias de arquivos, organizados pela **data em que o arquivo chegou** (em UTC):
 
-4. Criar o notebook "4 - analyze_creators"
-    * Usar o join da default.users_yt com a default.posts_creator para gerar analises desses creators
-        - Mostrar o top 3 posts ordenado por likes de cada creator nos últimos 6 meses (user_id, title, likes, rank)
-        - Mostrar o top 3 posts ordenado por views de cada creator nos últimos 6 meses (user_id, title, views, rank)
-        - Mostrar os yt_user que estão na tabela default.post_creator mas não estão na tabela default.users_yt
-        - Mostrar a quantidade de publicações por mês de cada creator.
-            - Exercício Extra 1: mostrar 0 nos meses que não tem video
-            - Exercício Extra 2: transformar a tabela no formato que a primeira coluna é o user_id e temos uma coluna para cada mês. 
-                - ex: 
-                    - user_id, 2024/01, 2024/02, 2024/03
-                    - felipeneto, 10, 20, 30
-                    - lucasneto, 5, 10, 15
-            - Exercício Extra 3: Mostrar as 3 tags mais utilizadas por criador de conteúdo
+```
+dados/
+├── 2026-09-01/
+│   ├── api_20260901T062214_3fa2c1.jsonl.gz
+│   ├── pagina_20260901T124501_9b07e3.jsonl.gz
+│   └── ...
+├── ...
+└── 2026-09-10/
+```
 
-## Envio
-Exportar todo seu workspace e nos enviar como um projeto github.
- 
-Para exportar va no menu workspace->users->seu usuário->clicar na setinha pra baixo->export->source file
+Cada arquivo é compactado com gzip e traz uma observação JSON por linha. Por exemplo, uma linha da fonte api (formatada para leitura):
+
+```json
+{
+  "source": "api",
+  "platform": "tt",
+  "post_id": "7400000000000000001",
+  "creator_id": "6800000000000000001",
+  "published_at": "2026-09-02T14:03:11Z",
+  "collected_at": "2026-09-03T08:12:45Z",
+  "status": "active",
+  "metrics": {"views": 15234, "likes": 812, "comments": 40}
+}
+```
+
+O que sabemos das fontes (a documentação está incompleta, como costuma estar):
+
+- `status` vale `active` ou `removed`, e `removed` quer dizer que o post foi removido ou ficou privado;
+- as métricas possíveis são `views`, `likes`, `comments` e `shares`, e cada fonte traz só algumas delas;
+- a fonte pagina escreve algumas coisas de um jeito diferente da api.
+
+Os arquivos estão como chegaram, sem limpeza nem correção. Descobrir o que há neles faz parte do desafio.
+
+## O que construir
+
+1. **Um pipeline que processa um dia de chegada por vez.** Crie um comando para processar um dia e outro (ou o mesmo) para processar um intervalo de dias. Reprocessar um dia ou um intervalo, quantas vezes for preciso, não pode duplicar nem perder dados. Lembre que arquivos podem chegar atrasados.
+2. **A tabela `posts_estado_atual`.** Uma linha por post, com o estado mais recente que conhecemos dele.
+3. **A tabela `posts_curva_diaria`.** Uma linha por post e por dia desde a publicação (do dia 0 ao dia 30), com as métricas do post ao final daquele dia. Você decide o que "dia N" significa e o que fazer em dias sem coleta. Registre essa decisão.
+4. **Checagens de qualidade.** Elas rodam a cada execução e deixam um resultado que outra pessoa consegue ler. Nenhum registro pode ser descartado em silêncio: o que for rejeitado fica guardado, com o motivo.
+5. **Testes automatizados.** Cubra o que você considera mais arriscado no seu pipeline.
+
+### Contrato de saída
+
+Depois de processar os 10 dias, exporte as duas tabelas para a pasta `saida/`, em CSV ou Parquet, com os nomes `posts_estado_atual` e `posts_curva_diaria`. Elas devem ter pelo menos as colunas abaixo, e podem ter outras.
+
+**posts_estado_atual**
+
+| coluna | tipo | observação |
+|---|---|---|
+| `platform` | texto | `yt`, `ig` ou `tt` |
+| `post_id` | texto | |
+| `creator_id` | texto | |
+| `published_at` | data e hora | em UTC, no formato ISO 8601 |
+| `status` | texto | `active` ou `removed` |
+| `views`, `likes`, `comments`, `shares` | inteiro | vazio quando não se sabe |
+
+**posts_curva_diaria**
+
+| coluna | tipo | observação |
+|---|---|---|
+| `platform` | texto | `yt`, `ig` ou `tt` |
+| `post_id` | texto | |
+| `dia` | inteiro | de 0 a 30 |
+| `views`, `likes`, `comments`, `shares` | inteiro | valor ao final do dia; vazio quando não se sabe |
+
+## Ferramentas
+
+- Use Python (3.10 ou mais novo) e SQL. Para processar, escolha o que preferir: DuckDB, Polars, pandas, PySpark local ou outra ferramenta.
+- Tudo precisa rodar no seu computador, sem conta em nuvem. Docker é opcional.
+- Instalar e rodar tem que ser simples: dois ou três comandos no seu README.
+
+## Uso de IA
+
+Pode usar IA à vontade (Claude, Copilot, ChatGPT ou outra). Nós usamos no dia a dia. Pedimos só duas coisas:
+
+- conte como usou, em `USO_DE_IA.md`: onde ajudou e o que você corrigiu ou rejeitou;
+- entenda tudo o que entregar, porque na conversa técnica você vai explicar o código e mudar uma parte dele ao vivo.
+
+Usar IA não tira ponto. Entregar código que você não sabe explicar tira.
+
+## O que entregar
+
+Um repositório git, que pode ser um link do GitHub ou do GitLab, ou um `.zip` com a pasta `.git`. Você pode trabalhar direto numa cópia deste repositório. Ele deve conter:
+
+- o código e os testes;
+- um `README.md` explicando como instalar, rodar o pipeline e rodar os testes;
+- o `DECISOES.md`, com as decisões que você tomou e por quê (há um modelo nesta pasta);
+- o `USO_DE_IA.md` (também há um modelo nesta pasta);
+- a pasta `saida/` gerada pela sua última execução.
+
+## Como avaliamos
+
+- **Modelagem:** a granularidade de cada tabela e a regra de cada campo.
+- **Reprocessamento:** o que acontece quando um dia roda de novo, quando um arquivo chega atrasado e quando algo falha no meio.
+- **Qualidade e testes:** o que você checa, o que você testa e por quê.
+- **Operação:** como isso rodaria todo dia em produção, e o que mudaria com mil vezes mais dados.
+- **Comunicação:** a clareza do README, do `DECISOES.md` e da conversa.
+
+Depois da entrega, marcamos uma conversa de cerca de 60 minutos. Você apresenta a solução, responde perguntas sobre o código e faz uma pequena mudança nele com a tela compartilhada. Pode usar IA nessa hora também.
+
+## Se algo parecer ambíguo
+
+Algumas coisas são ambíguas de propósito, e não existe uma única resposta certa. Decida, registre em `DECISOES.md` e siga em frente: isso também é avaliado. Se algo impedir você de continuar, responda à mensagem de quem enviou o desafio.
+
+## Desafio extra (opcional)
+
+A pasta [`extra/`](extra/README.md) tem um segundo desafio, menor: um incidente num pipeline antigo. Ele é **opcional** e conta como diferencial; deixar de fazer não tira ponto. Faça só se sobrar tempo depois do principal.

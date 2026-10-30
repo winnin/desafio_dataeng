@@ -1,0 +1,16 @@
+[2026-09-04 03:00:02] processando 2026-09-03 (banco /srv/painel/painel.duckdb, réplica postgresql://painel_app:Pa1nel-2024!@painel-db.interno:5432/painel)
+[2026-09-04 03:00:02] 4 arquivos encontrados para 2026-09-03
+[2026-09-04 03:00:02] 84 registros lidos
+[2026-09-04 03:00:03] 43 posts atualizados
+[2026-09-04 03:00:03] resumo diário gravado
+[2026-09-04 03:00:03] replicando tabelas para postgresql://painel_app:Pa1nel-2024!@painel-db.interno:5432/painel
+[2026-09-04 03:30:03] [agendador] tarefa painel excedeu o tempo limite de 30 min; processo encerrado
+[2026-09-04 03:41:00] [agendador] tarefa painel: tentativa 2 de 3
+[2026-09-04 03:41:01] processando 2026-09-03 (banco /srv/painel/painel.duckdb, réplica postgresql://painel_app:Pa1nel-2024!@painel-db.interno:5432/painel)
+[2026-09-04 03:41:01] 4 arquivos encontrados para 2026-09-03
+[2026-09-04 03:41:01] 84 registros lidos
+[2026-09-04 03:41:02] 43 posts atualizados
+[2026-09-04 03:41:02] resumo diário gravado
+[2026-09-04 03:41:02] replicando tabelas para postgresql://painel_app:Pa1nel-2024!@painel-db.interno:5432/painel
+[2026-09-04 03:44:19] fim
+[2026-09-04 03:44:19] [agendador] tarefa painel concluída (tentativa 2)
